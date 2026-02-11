@@ -21,24 +21,21 @@ from fastapi.staticfiles import StaticFiles
 from passlib.context import CryptContext
 from jose import jwt, JWTError
 import psycopg2
-from dotenv import load_dotenv
 from mangum import Mangum
 
 # =====================
-# ENV
+# ENV (Vercel-safe)
 # =====================
-load_dotenv()
-
-DATABASE_URL = os.getenv("DATABASE_URL")
-JWT_SECRET = os.getenv("ELY_JWT_SECRET")
-DISCORD_CLIENT_ID = os.getenv("DISCORD_CLIENT_ID")
-DISCORD_CLIENT_SECRET = os.getenv("DISCORD_CLIENT_SECRET")
-DISCORD_REDIRECT_URI = os.getenv("DISCORD_REDIRECT_URI")
-ADMIN_SECRET = os.getenv("ADMIN_SECRET", "elyadmin")
+DATABASE_URL = os.environ.get("DATABASE_URL")
+JWT_SECRET = os.environ.get("ELY_JWT_SECRET")
+DISCORD_CLIENT_ID = os.environ.get("DISCORD_CLIENT_ID")
+DISCORD_CLIENT_SECRET = os.environ.get("DISCORD_CLIENT_SECRET")
+DISCORD_REDIRECT_URI = os.environ.get("DISCORD_REDIRECT_URI")
+ADMIN_SECRET = os.environ.get("ADMIN_SECRET", "elyadmin")
 
 ALGO = "HS256"
-TOKEN_DAYS = int(os.getenv("TOKEN_DAYS", 7))
-USE_SECURE_COOKIES = bool(os.getenv("VERCEL")) or os.getenv("ENV") == "production"
+TOKEN_DAYS = int(os.environ.get("TOKEN_DAYS", "7"))
+USE_SECURE_COOKIES = True
 
 pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -46,7 +43,6 @@ pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # APP
 # =====================
 app = FastAPI()
-handler = Mangum(app)
 
 # =====================
 # STATIC FILES
@@ -67,15 +63,14 @@ app.add_middleware(
 )
 
 # =====================
-# DATABASE
+# DATABASE (lazy)
 # =====================
 def db():
     if not DATABASE_URL:
         raise RuntimeError("DATABASE_URL missing")
-    return psycopg2.connect(DATABASE_URL)
+    return psycopg2.connect(DATABASE_URL, connect_timeout=5)
 
-@app.on_event("startup")
-def init_db():
+def ensure_tables():
     with db() as conn:
         cur = conn.cursor()
         cur.execute("""
@@ -121,7 +116,7 @@ def set_cookie(res, token: str):
         token,
         httponly=True,
         samesite="lax",
-        secure=USE_SECURE_COOKIES,
+        secure=True,
         max_age=TOKEN_DAYS * 86400,
         path="/",
     )
@@ -134,26 +129,25 @@ def require_auth(req: Request):
     return uid
 
 # =====================
-# ROUTES YOU REQUESTED
+# ROUTES
 # =====================
+@app.get("/")
+def root():
+    return RedirectResponse("/static/index.html")
 
-# /login
 @app.get("/login")
 def login():
     return RedirectResponse("/static/login.html")
 
-# /dashboard
 @app.get("/dashboard", response_class=HTMLResponse)
 def dashboard(uid=Depends(require_auth)):
-    path = os.path.join(STATIC_ROOT, "dashboard.html")
-    if os.path.isfile(path):
-        with open(path, encoding="utf-8") as f:
-            return f.read()
-    return "<h1>Dashboard</h1>"
+    path = os.path.join(STATIC_ROOT, "Assets", "dashboard.html")
+    with open(path, encoding="utf-8") as f:
+        return f.read()
 
-# /api/register
 @app.post("/api/register")
 def register(email: str = Form(...), password: str = Form(...)):
+    ensure_tables()
     uid = str(uuid.uuid4())
     try:
         with db() as conn:
@@ -170,14 +164,12 @@ def register(email: str = Form(...), password: str = Form(...)):
     set_cookie(res, create_token(uid))
     return res
 
-# /api/logout
 @app.post("/api/logout")
 def logout():
     res = JSONResponse({"ok": True})
     res.delete_cookie("ely_token", path="/")
     return res
 
-# /api/me
 @app.get("/api/me")
 def me(uid=Depends(require_auth)):
     with db() as conn:
@@ -186,7 +178,6 @@ def me(uid=Depends(require_auth)):
         u = cur.fetchone()
     return {"email": u[0], "discord_id": u[1]}
 
-# /api/auth/discord
 @app.get("/api/auth/discord")
 def discord_login():
     return RedirectResponse(
@@ -196,9 +187,9 @@ def discord_login():
         "&response_type=code&scope=identify email"
     )
 
-# /api/auth/discord/callback
 @app.get("/api/auth/discord/callback")
 def discord_callback(code: str):
+    ensure_tables()
     token_res = requests.post(
         "https://discord.com/api/oauth2/token",
         data={
@@ -210,9 +201,6 @@ def discord_callback(code: str):
         },
         headers={"Content-Type": "application/x-www-form-urlencoded"},
     ).json()
-
-    if "access_token" not in token_res:
-        raise HTTPException(400, "Discord auth failed")
 
     user = requests.get(
         "https://discord.com/api/users/@me",
@@ -240,7 +228,6 @@ def discord_callback(code: str):
     set_cookie(res, create_token(uid))
     return res
 
-# /api/redeem
 @app.post("/api/redeem")
 def redeem(data: dict = Body(...), uid=Depends(require_auth)):
     key = data.get("key")
@@ -248,10 +235,8 @@ def redeem(data: dict = Body(...), uid=Depends(require_auth)):
         cur = conn.cursor()
         cur.execute("SELECT used_by FROM licenses WHERE key=%s", (key,))
         row = cur.fetchone()
-        if not row:
+        if not row or row[0]:
             raise HTTPException(400, "Invalid key")
-        if row[0]:
-            raise HTTPException(400, "Already used")
         cur.execute(
             "UPDATE licenses SET used_by=%s, used_at=NOW() WHERE key=%s",
             (uid, key),
@@ -259,7 +244,6 @@ def redeem(data: dict = Body(...), uid=Depends(require_auth)):
         conn.commit()
     return {"ok": True}
 
-# /api/generate_license
 @app.post("/api/generate_license")
 def generate_license(
     admin_secret: str = Query(...),
@@ -268,7 +252,7 @@ def generate_license(
 ):
     if admin_secret != ADMIN_SECRET:
         raise HTTPException(403)
-
+    ensure_tables()
     key = f"{product.upper()}-{secrets.token_hex(8).upper()}"
     with db() as conn:
         cur = conn.cursor()
@@ -277,5 +261,9 @@ def generate_license(
             (key, product, duration),
         )
         conn.commit()
+    return {"key": key}
 
-    return {"key": key, "product": product, "duration": duration}
+# =====================
+# VERCEL HANDLER (LAST)
+# =====================
+handler = Mangum(app)
