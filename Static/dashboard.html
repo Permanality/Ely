@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/x-icon" href="Assets/logo.png">
+<title>ELYSIUM - Dashboard</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+/* --- Core Variables --- */
+:root {
+    --bg: #0b0b0c;
+    --card-bg: rgba(20, 20, 23, 0.7);
+    --panel: rgba(255,255,255,0.05);
+    --pink: #f2a3c7;
+    --pink-soft: rgba(242,163,199,.35);
+    --pink-glow: rgba(242, 163, 199, 0.3);
+    --text: #ffffff;
+    --muted: #b5b5b5;
+    --border-color: rgba(255,255,255,0.08);
+    --warning: #ffb800;
+    --success: #7CFC9A;
+}
+
+/* --- Reset & Base --- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: radial-gradient(circle at top, #161216, #0b0b0c 65%);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+/* --- Navigation --- */
+.nav-top {
+    display: flex;
+    justify-content: space-between;
+    padding: 1.5rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.btn-small {
+    background: var(--panel);
+    border: 1px solid var(--border-color);
+    color: var(--text);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.2s;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-small:hover {
+    border-color: var(--pink);
+    box-shadow: 0 0 15px var(--pink-soft);
+}
+
+.btn-pink {
+    background: linear-gradient(180deg, #f2a3c7, #d98fb1);
+    color: #0b0b0c;
+    border: none;
+    box-shadow: 0 5px 20px rgba(242,163,199,0.3);
+}
+
+.btn-pink:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(242,163,199,0.5);
+}
+
+/* --- Header Section --- */
+.header-section {
+    max-width: 1100px;
+    margin: 3rem auto 2rem;
+    padding: 0 2rem;
+}
+
+h1 {
+    position: relative;
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(180deg, #ffffff, #e8c4d6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 12px rgba(242,163,199,0.35), 0 0 28px rgba(242,163,199,0.25);
+}
+
+h1 span { font-weight: 800; }
+
+.subtitle { color: var(--muted); font-size: 0.95rem; }
+
+/* --- Grid & Cards --- */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1.8fr 1fr;
+    gap: 1.5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem 4rem;
+}
+
+.card {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    border-radius: 12px;
+    padding: 1.8rem;
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    border-color: rgba(255,255,255,0.12);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* --- Product Selector (Radio Chips) --- */
+.product-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.radio-item { flex: 1; position: relative; }
+.radio-item input { display: none; }
+
+.radio-label {
+    display: block;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    text-align: center;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
+
+.radio-item input:checked + .radio-label {
+    border-color: var(--pink);
+    color: #fff;
+    background: rgba(242,163,199,0.1);
+    box-shadow: 0 0 15px var(--pink-soft);
+}
+
+/* --- License Info Box --- */
+.license-box {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.license-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.status-badge {
+    background: rgba(255, 184, 0, 0.1);
+    color: var(--warning);
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 184, 0, 0.2);
+    text-transform: uppercase;
+}
+
+.meta-row { display: flex; gap: 15px; }
+
+.meta-item {
+    background: rgba(255,255,255,0.03);
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.meta-item span { color: var(--muted); margin-right: 5px; }
+
+/* --- Account Info Items --- */
+.account-item { margin-bottom: 1.5rem; }
+.account-item:last-child { margin-bottom: 0; }
+
+.label-mini {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+/* --- Glassmorphism Modal --- */
+#redeemModal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px); /* Blur background */
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#redeemModal.show {
+    display: flex;
+    opacity: 1;
+}
+
+.modal-content {
+    background: #121214;
+    padding: 2.5rem;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px var(--pink-glow);
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#redeemModal.show .modal-content {
+    transform: scale(1);
+}
+
+.modal-content h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(180deg, #ffffff, #e8c4d6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.modal-subtitle {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.03);
+    color: #fff;
+    font-size: 0.95rem;
+    font-family: 'Inter', monospace; /* Monospace for keys */
+    transition: all 0.2s ease;
+    outline: none;
+    margin-bottom: 1rem;
+    text-align: center;
+    letter-spacing: 1px;
+}
+
+.modal-input:focus {
+    border-color: var(--pink);
+    box-shadow: 0 0 15px var(--pink-soft);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+#closeRedeemModal {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: var(--panel);
+    border: 1px solid var(--border-color);
+    color: var(--text);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+#closeRedeemModal:hover {
+    background: #ff3b30;
+    border-color: #ff3b30;
+    color: white;
+}
+
+/* --- Shake Animation for Errors --- */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.shake { animation: shake 0.5s; }
+
+/* --- Responsive --- */
+@media (max-width: 850px) {
+    .dashboard-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav-top">
+    <a href="/static/index.html" class="btn-small"><i class="fa-solid fa-arrow-left"></i> Go Back</a>
+    <button id="logoutBtn" class="btn-small">Logout <i class="fa-solid fa-right-from-bracket"></i></button>
+</nav>
+
+<div class="header-section">
+    <h1>Your <span>ELYSIUM</span> Account</h1>
+    <p class="subtitle">Manage your licenses, status and account information in one place.</p>
+</div>
+
+<div class="dashboard-grid">
+    
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Installation</h2>
+                <a href="#" class="btn-small"><i class="fa-solid fa-download"></i> Download Elysium</a>
+            </div>
+            <p style="color: var(--muted); font-size: 0.9rem;">Download the latest build and follow the installation instructions.</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Your License</h2>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-small"><i class="fa-solid fa-plus"></i> Buy License</button>
+                    <button class="btn-small btn-pink" id="redeemLicenseBtn"><i class="fa-solid fa-key"></i> Redeem Code</button>
+                </div>
+            </div>
+
+            <div class="product-selector">
+                <label class="radio-item">
+                    <input type="radio" name="product" value="roblox" checked onclick="updateView('Roblox')">
+                    <span class="radio-label">Roblox</span>
+                </label>
+                <label class="radio-item">
+                    <input type="radio" name="product" value="cs2" onclick="updateView('CS2')">
+                    <span class="radio-label">CS2</span>
+                </label>
+            </div>
+
+            <div class="license-box">
+                <div class="license-info">
+                    <div>
+                        <div id="selected-prod" style="font-weight: 700; font-size: 1.1rem; margin-bottom: 2px;">Roblox</div>
+                        <div style="color: var(--muted); font-size: 0.85rem;">Redeem a code or buy a license to start.</div>
+                    </div>
+                    <span class="status-badge" id="license-status-badge">NOT STARTED</span>
+                </div>
+                <div class="meta-row">
+                    <div class="meta-item"><span>REMAINING:</span> <strong id="license-remaining">—</strong></div>
+                    <div class="meta-item"><span>EXPIRES:</span> <strong id="license-expires">—</strong></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Service Status</h2>
+                <span style="color: #ff3b30; font-size: 0.7rem; font-weight: 800; border: 1px solid rgba(255,59,48,0.3); padding: 4px 8px; border-radius: 4px; background: rgba(255,59,48,0.1);">OFFLINE</span>
+            </div>
+            <p style="color: var(--muted); font-size: 0.85rem;">Service is currently unavailable.</p>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title" style="margin-bottom: 1.5rem;">Account Information</h2>
+            
+            <div class="account-item">
+                <span class="label-mini">Email</span>
+                <strong id="accEmail" style="filter: blur(4px); transition: 0.3s; cursor: pointer;" onclick="this.style.filter='none'">—</strong>
+            </div>
+
+            <div class="account-item">
+                <span class="label-mini">HWID</span>
+                <strong id="accHwid" style="font-family: monospace; filter: blur(4px); transition: 0.3s; cursor: pointer;" onclick="this.style.filter='none'">—</strong>
+            </div>
+
+            <div class="account-item">
+                <span class="label-mini">Role</span>
+                <span style="background: rgba(242,163,199,0.1); color: var(--pink); border: 1px solid var(--pink-soft); padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: 800;">USER</span>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="redeemModal">
+    <div class="modal-content">
+        <button id="closeRedeemModal"><i class="fa-solid fa-xmark"></i></button>
+        
+        <h2>Redeem License</h2>
+        <p class="modal-subtitle">Enter your 16-character license key below to activate your software instantly.</p>
+        
+        <form id="redeemForm">
+            <input type="text" id="licenseKeyInput" class="modal-input" placeholder="XXXX-XXXX-XXXX-XXXX" required autocomplete="off">
+            
+            <button type="submit" class="btn-small btn-pink" style="width: 100%; padding: 14px; font-size: 0.9rem; justify-content: center;">
+                <i class="fa-solid fa-bolt"></i> Activate Key
+            </button>
+            
+            <div id="redeemMsg" style="font-size: 0.85rem; margin-top: 15px; text-align: center; font-weight: 600; min-height: 20px;"></div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // 1. Product Toggle Logic
+    function updateView(name) {
+        const titleEl = document.getElementById('selected-prod');
+        // Visual fade effect for text change
+        titleEl.style.opacity = '0';
+        setTimeout(() => {
+            titleEl.innerText = name;
+            titleEl.style.opacity = '1';
+            // Here you would typically fetch new license data for the selected product
+            // e.g., fetchLicenseData(name);
+        }, 200);
+        titleEl.style.transition = 'opacity 0.2s ease';
+    }
+
+    // 2. Modal Logic (Open/Close/Anim)
+    const redeemBtn = document.getElementById('redeemLicenseBtn');
+    const redeemModal = document.getElementById('redeemModal');
+    const closeRedeemModal = document.getElementById('closeRedeemModal');
+    const redeemForm = document.getElementById('redeemForm');
+    const redeemMsg = document.getElementById('redeemMsg');
+    const licenseInput = document.getElementById('licenseKeyInput');
+
+    function openModal() {
+        redeemModal.classList.add('show'); // Triggers CSS transition
+        redeemMsg.textContent = '';
+        licenseInput.value = '';
+        setTimeout(() => licenseInput.focus(), 100); // Auto-focus input
+    }
+
+    function closeModal() {
+        redeemModal.classList.remove('show');
+    }
+
+    if (redeemBtn) redeemBtn.addEventListener('click', openModal);
+    if (closeRedeemModal) closeRedeemModal.addEventListener('click', closeModal);
+    
+    // Close if clicking outside the modal content
+    window.addEventListener('click', (e) => {
+        if (e.target === redeemModal) closeModal();
+    });
+
+    // 3. Redeem Submission Logic
+    if (redeemForm) {
+        redeemForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const key = licenseInput.value.trim();
+            const modalContent = document.querySelector('.modal-content');
+
+            if (!key) return;
+
+            redeemMsg.style.color = 'var(--muted)';
+            redeemMsg.textContent = 'Verifying key...';
+
+            try {
+                const res = await fetch('/api/redeem', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include', // Needed if using cookies/sessions
+                    body: JSON.stringify({ key })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    // SUCCESS
+                    redeemMsg.style.color = 'var(--success)';
+                    redeemMsg.textContent = data.message || 'License activated successfully!';
+                    
+                    // Update UI immediately (Mock update)
+                    document.getElementById('license-status-badge').innerText = "ACTIVE";
+                    document.getElementById('license-status-badge').style.color = "var(--success)";
+                    document.getElementById('license-status-badge').style.background = "rgba(124, 252, 154, 0.1)";
+                    document.getElementById('license-status-badge').style.borderColor = "rgba(124, 252, 154, 0.3)";
+
+                    setTimeout(() => { closeModal(); location.reload(); }, 1500);
+                } else {
+                    // FAILURE
+                    throw new Error(data.message || 'Invalid license key.');
+                }
+            } catch (err) {
+                // ERROR HANDLING & SHAKE ANIMATION
+                redeemMsg.style.color = '#ff3b30';
+                redeemMsg.textContent = err.message || 'Error processing request.';
+                
+                // Trigger shake animation
+                modalContent.classList.add('shake');
+                setTimeout(() => modalContent.classList.remove('shake'), 500);
+            }
+        });
+    }
+
+    // 4. Load User Account Data
+    async function loadAccount() {
+        try {
+            // --- REPLACE URL WITH YOUR ACTUAL ENDPOINT ---
+            const res = await fetch('/api/me', { credentials: 'include' });
+            
+            if (!res.ok) {
+                // If 401 Unauthorized, redirect to login
+                if (res.status === 401) window.location.href = '/static/login.html';
+                return;
+            }
+
+            const data = await res.json();
+            
+            // Populate Data
+            if (data.email) document.getElementById('accEmail').innerText = data.email;
+            if (data.hwid) document.getElementById('accHwid').innerText = data.hwid;
+
+            // Update Status Badge if active
+            const badge = document.getElementById('license-status-badge');
+            if (data.license_active) {
+                badge.innerText = 'ACTIVE';
+                badge.style.background = 'rgba(124, 252, 154, 0.1)';
+                badge.style.color = 'var(--success)';
+                badge.style.borderColor = 'rgba(124, 252, 154, 0.3)';
+                
+                // Update dates if available
+                if (data.days_remaining) document.getElementById('license-remaining').innerText = data.days_remaining + " Days";
+                if (data.expires_at) document.getElementById('license-expires').innerText = data.expires_at;
+            }
+        } catch (e) {
+            console.error("Failed to load account data:", e);
+            // Optional: Redirect to login on error?
+            // window.location.href = '/static/login.html';
+        }
+    }
+
+    // 5. Logout Logic
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+        try {
+            await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+            window.location.href = '/';
+        } catch (e) {
+            console.error("Logout failed", e);
+        }
+    });
+
+    // Initialize
+    loadAccount();
+</script>
+
+</body>
+</html>

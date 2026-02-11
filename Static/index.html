@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/x-icon" href="Assets/logo.png">
+<title>ELYSIUM</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+:root {
+    --bg: #0b0b0c;
+    --panel: rgba(255,255,255,0.05);
+    --pink: #f2a3c7;
+    --pink-soft: rgba(242,163,199,.35);
+    --text: #ffffff;
+    --muted: #b5b5b5;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Inter, system-ui, sans-serif;
+    background: radial-gradient(circle at top, #161216, #0b0b0c 65%);
+    color: var(--text);
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+}
+
+main {
+    width: 100%;
+    max-width: 520px;
+    padding: 2.5rem;
+    text-align: center;
+    animation: fadeIn .8s ease forwards;
+}
+
+h1 {
+    position: relative;
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 1.4rem;
+    background: linear-gradient(180deg, #ffffff, #e8c4d6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    text-shadow:
+        0 0 12px rgba(242,163,199,0.35),
+        0 0 28px rgba(242,163,199,0.25);
+}
+
+h1::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -10px;
+    transform: translateX(-50%);
+    width: 64px;
+    height: 4px;
+    border-radius: 999px;
+    background: linear-gradient(
+        90deg,
+        rgba(242,163,199,0.2),
+        rgba(242,163,199,0.9),
+        rgba(242,163,199,0.2)
+    );
+    box-shadow:
+        0 0 10px rgba(242,163,199,0.6);
+}
+
+p {
+    font-size: 0.95rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 2.2rem;
+}
+
+p a {
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1px solid var(--pink);
+}
+
+.actions {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 2.6rem;
+}
+
+a.button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+    text-decoration: none;
+    border-radius: 10px;
+    background: var(--panel);
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+
+a.button:hover {
+    transform: translateY(-2px);
+    border-color: var(--pink);
+    box-shadow:
+        0 6px 25px rgba(0,0,0,.5),
+        0 0 18px rgba(242,163,199,.25);
+}
+
+a.button.primary {
+    background: linear-gradient(180deg, #f2a3c7, #d98fb1);
+    color: #0b0b0c;
+    border: none;
+    box-shadow:
+        0 10px 30px rgba(242,163,199,.45);
+}
+
+footer {
+    font-size: 0.75rem;
+    color: #8a8a8a;
+}
+
+footer a {
+    color: #a8a8a8;
+    text-decoration: none;
+}
+
+@media (max-width: 480px) {
+    h1 { font-size: 2.4rem; }
+    .actions { flex-direction: column; }
+    a.button { width: 100%; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<main>
+    <h1>ELYSIUM</h1>
+
+    <p>
+        A license is required to use elysium.
+    </p>
+
+    <nav class="actions" aria-label="Main actions">
+        <a href="https://discord.gg/EXChuRjAGQ" class="button">
+            <i class="fa-brands fa-discord"></i>
+            Discord
+        </a>
+
+        <a href="#" class="button">
+            <i class="fa-solid fa-cart-shopping"></i>
+            Purchase
+        </a>
+
+        <a href="/static/login.html" class="button primary">
+            <i class="fa-solid fa-right-to-bracket"></i>
+            <span id="login-btn-text">Login</span>
+        </a>
+    </nav>
+
+    <footer>
+        By using this software, you agree to our
+        <a href="/static/tos.html">terms</a> and <a href="/static/privacy.html">privacy policy</a>.
+    </footer>
+</main>
+
+
+<script>
+// On page load, check if user is logged in
+window.addEventListener('DOMContentLoaded', async () => {
+    const loginBtn = document.querySelector('a.button.primary');
+    if (!loginBtn) return;
+    try {
+        const res = await fetch('/api/me', { credentials: 'include' });
+        if (res.ok) {
+            // User is logged in, change button to Dashboard
+            loginBtn.href = '/static/dashboard.html';
+            const btnText = document.getElementById('login-btn-text');
+            if (btnText) btnText.textContent = 'Dashboard';
+        }
+    } catch (e) {
+        // ignore
+    }
+});
+</script>
+
+</body>
+</html>
